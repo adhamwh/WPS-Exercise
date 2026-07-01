@@ -64,3 +64,12 @@ export type CmsProduct = {
 export type ResourceCollection<T> = {
   data: T[];
 };
+
+export type ResourceItem<T> = {
+  data: T;
+};
+
+export type AdminApiError = {
+  message: string;
+  errors: Record<string, string[]>;
+};
