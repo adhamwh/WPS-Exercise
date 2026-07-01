@@ -1,14 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getHomepage } from "./api/homepage";
-import type { HomepageSection, WoodType } from "./types/homepage";
+import type { HomepageSection, Service, WoodType } from "./types/homepage";
+import aboutImageOne from "./imgs/Aboutus1.jpg";
+import aboutImageTwo from "./imgs/Aboutus2.jpg";
+import aboutImageThree from "./imgs/Aboutus3.jpg";
+import advantagesImage from "./imgs/AdvantagesPic.png";
+import arrow from "./imgs/Arrow.png";
 import backgroundTexture from "./imgs/BackgroundImg.png";
 import ashWood from "./imgs/AshWood.jpg";
 import bukWood from "./imgs/BukWood.jpg";
 import heroImageOne from "./imgs/HeroImg1.jpg";
 import heroImageTwo from "./imgs/HeroImg2.jpg";
 import heroImageThree from "./imgs/HeroImg3.jpg";
+import locationIcon from "./imgs/LocationIcon.png";
+import logImage from "./imgs/LogImg.png";
 import logo from "./imgs/LogoWhite.png";
 import oakWood from "./imgs/OakWood.jpg";
+import ourWorkOne from "./imgs/OurWork1.jpg";
+import phoneIcon from "./imgs/PhoneIcon.png";
 import woodBackground from "./imgs/Woodstock.jpg";
 import "./index.css";
 
@@ -80,6 +89,30 @@ const woodImages: Record<string, string> = {
   ash: ashWood,
 };
 
+const workSlides = [
+  {
+    src: ourWorkOne,
+    alt: "Custom kitchen made with solid wood cabinetry",
+  },
+  {
+    src: heroImageOne,
+    alt: "Custom solid wood dining table",
+  },
+  {
+    src: heroImageTwo,
+    alt: "Custom curved solid wood staircase",
+  },
+];
+
+const defaultAdvantageItems = [
+  "In-house carpentry production",
+  "We only treat wood with environmentally friendly and safe products",
+  "Prices from the manufacturer, no extra charges",
+];
+
+const defaultAboutDescription =
+  "We manufacture solid wood products according to individual drawings. We make chairs, armchairs, wardrobes, beds and much more in our own workshop, equipped with all the necessary industrial equipment.";
+
 function getTitleLines(title: string) {
   const words = title.trim().split(/\s+/);
 
@@ -92,19 +125,31 @@ function getTitleLines(title: string) {
 
 function App() {
   const [heroSection, setHeroSection] = useState<HomepageSection | null>(null);
+  const [advantagesSection, setAdvantagesSection] =
+    useState<HomepageSection | null>(null);
+  const [aboutSection, setAboutSection] = useState<HomepageSection | null>(null);
   const [woodTypes, setWoodTypes] = useState<WoodType[]>(defaultWoodTypes);
+  const [services, setServices] = useState<Service[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeWood, setActiveWood] = useState(0);
+  const [activeWork, setActiveWork] = useState(0);
   const woodTrackRef = useRef<HTMLDivElement>(null);
+  const workTouchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     getHomepage()
       .then((response) => {
         setHeroSection(response.sections.hero ?? null);
+        setAdvantagesSection(response.sections.advantages ?? null);
+        setAboutSection(response.sections.about ?? null);
 
         if (response.wood_types.length > 0) {
           setWoodTypes(response.wood_types.slice(0, 3));
+        }
+
+        if (response.services.length > 0) {
+          setServices(response.services.slice(0, 3));
         }
       })
       .catch(() => {
@@ -113,7 +158,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 24);
+    const handleScroll = () => {
+      setIsScrolled((currentlyScrolled) =>
+        currentlyScrolled ? window.scrollY > 16 : window.scrollY > 64,
+      );
+    };
 
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -158,6 +207,17 @@ function App() {
   const [priceAmount, priceSuffix = ""] = hero.description.split(
     /(?=\s+per\s+m3$)/i,
   );
+  const advantagesTitle =
+    advantagesSection?.title || "ADVANTAGES WORKING WITH US";
+  const [advantagesLead, ...advantagesRest] = advantagesTitle.split(/\s+/);
+  const advantageItems = [
+    services[0]?.title || defaultAdvantageItems[0],
+    services[1]?.description || defaultAdvantageItems[1],
+    services[2]?.description || defaultAdvantageItems[2],
+  ];
+  const aboutDescription = (
+    aboutSection?.description || defaultAboutDescription
+  ).replace(/^BIO CWT\s*-\s*/i, "");
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -176,6 +236,10 @@ function App() {
       behavior: "smooth",
     });
     setActiveWood(nextIndex);
+  };
+
+  const showWork = (index: number) => {
+    setActiveWork((index + workSlides.length) % workSlides.length);
   };
 
   return (
@@ -216,6 +280,12 @@ function App() {
           </nav>
         </div>
       </header>
+
+      <div
+        className="home-page__contours"
+        style={{ backgroundImage: `url(${backgroundTexture})` }}
+        aria-hidden="true"
+      />
 
       <main>
         <section id="top" className="hero-section" aria-labelledby="hero-title">
@@ -265,11 +335,6 @@ function App() {
             />
           </div>
 
-          <div
-            className="hero-section__contours"
-            style={{ backgroundImage: `url(${backgroundTexture})` }}
-            aria-hidden="true"
-          />
         </section>
 
         <section
@@ -277,12 +342,6 @@ function App() {
           className="wood-types-section"
           aria-labelledby="wood-types-title"
         >
-          <div
-            className="wood-types-section__contours"
-            style={{ backgroundImage: `url(${backgroundTexture})` }}
-            aria-hidden="true"
-          />
-
           <div className="wood-types-section__inner">
             <h2 id="wood-types-title" className="wood-types-section__title">
               <span>THE WOOD WE</span>
@@ -371,7 +430,258 @@ function App() {
             </div>
           </div>
         </section>
+
+        <section
+          id="gallery"
+          className="our-work-section"
+          aria-labelledby="our-work-title"
+        >
+          <div className="our-work-section__inner">
+            <h2 id="our-work-title" className="our-work-section__title">
+              OUR WORK
+            </h2>
+
+            <div className="our-work-slider">
+              <button
+                className="our-work-slider__arrow our-work-slider__arrow--previous"
+                type="button"
+                aria-label="Show previous project"
+                onClick={() => showWork(activeWork - 1)}
+              >
+                <img src={arrow} alt="" aria-hidden="true" />
+              </button>
+
+              <div
+                className="our-work-slider__viewport"
+                aria-live="polite"
+                onTouchStart={(event) => {
+                  workTouchStartX.current = event.touches[0]?.clientX ?? null;
+                }}
+                onTouchEnd={(event) => {
+                  if (workTouchStartX.current === null) {
+                    return;
+                  }
+
+                  const endX = event.changedTouches[0]?.clientX;
+
+                  if (endX !== undefined) {
+                    const distance = endX - workTouchStartX.current;
+
+                    if (Math.abs(distance) > 40) {
+                      showWork(activeWork + (distance < 0 ? 1 : -1));
+                    }
+                  }
+
+                  workTouchStartX.current = null;
+                }}
+              >
+                {workSlides.map((slide, index) => (
+                  <img
+                    key={slide.src}
+                    className={`our-work-slider__image${
+                      index === activeWork ? " our-work-slider__image--active" : ""
+                    }`}
+                    src={slide.src}
+                    alt={index === activeWork ? slide.alt : ""}
+                    aria-hidden={index !== activeWork}
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                ))}
+              </div>
+
+              <button
+                className="our-work-slider__arrow our-work-slider__arrow--next"
+                type="button"
+                aria-label="Show next project"
+                onClick={() => showWork(activeWork + 1)}
+              >
+                <img src={arrow} alt="" aria-hidden="true" />
+              </button>
+
+              <div className="our-work-slider__pagination" aria-label="Choose project">
+                {workSlides.map((slide, index) => (
+                  <button
+                    key={slide.src}
+                    className={`our-work-slider__dot${
+                      index === activeWork ? " our-work-slider__dot--active" : ""
+                    }`}
+                    type="button"
+                    aria-label={`Show project ${index + 1}`}
+                    aria-current={index === activeWork ? "true" : undefined}
+                    onClick={() => showWork(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="services"
+          className="advantages-section"
+          aria-labelledby="advantages-title"
+        >
+          <div className="advantages-section__inner">
+            <h2 id="advantages-title" className="advantages-section__title">
+              <span>{advantagesLead}</span>
+              <span>{advantagesRest.join(" ")}</span>
+            </h2>
+
+            <div className="advantages-section__content">
+              <img
+                className="advantages-section__image"
+                src={advantagesImage}
+                alt="Solid wood staircase construction"
+                loading="lazy"
+              />
+
+              <div className="advantages-section__copy">
+                {advantageItems.map((item) => (
+                  <p key={item}>{item}</p>
+                ))}
+              </div>
+            </div>
+
+            <a
+              className="advantages-section__button"
+              href={advantagesSection?.button_url || "#contact"}
+            >
+              {advantagesSection?.button_text || "Receive a consultation"}
+            </a>
+          </div>
+        </section>
+
+        <section
+          id="about"
+          className="about-section"
+          aria-labelledby="about-title"
+        >
+          <div className="about-section__panel">
+            <div className="about-section__content">
+              <h2 id="about-title" className="about-section__title">
+                {aboutSection?.title || "ABOUT US"}
+              </h2>
+
+              <p className="about-section__copy">
+                <strong>BIO CWT</strong>
+                <span> - {aboutDescription}</span>
+              </p>
+            </div>
+
+            <div className="about-section__images" aria-label="Our workshop">
+              <img
+                className="about-section__image about-section__image--top"
+                src={aboutImageOne}
+                alt="Carpenter measuring a wooden frame"
+                loading="lazy"
+              />
+              <img
+                className="about-section__image about-section__image--main"
+                src={aboutImageTwo}
+                alt="Carpenter working in the BIO CWT workshop"
+                loading="lazy"
+              />
+              <img
+                className="about-section__image about-section__image--bottom"
+                src={aboutImageThree}
+                alt="Preparing a custom wood product drawing"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="contact"
+          className="questions-section"
+          aria-labelledby="questions-title"
+        >
+          <div className="questions-section__inner">
+            <h2 id="questions-title" className="questions-section__title">
+              ANY QUESTIONS?
+            </h2>
+
+            <div className="questions-section__layout">
+              <form
+                className="questions-form"
+                onSubmit={(event) => event.preventDefault()}
+              >
+                <label>
+                  <span className="questions-form__label">Your name</span>
+                  <input type="text" name="name" placeholder="Your name" required />
+                </label>
+
+                <label>
+                  <span className="questions-form__label">Your telephone number</span>
+                  <input
+                    type="tel"
+                    name="telephone"
+                    placeholder="Your telephone number"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span className="questions-form__label">Your question</span>
+                  <textarea
+                    name="question"
+                    placeholder="Your question"
+                    rows={5}
+                    required
+                  />
+                </label>
+
+                <button type="submit">Send</button>
+              </form>
+
+              <p className="questions-section__copy">
+                Write to us and we will be sure to answer all your questions and
+                give you a comprehensive consultation.
+              </p>
+            </div>
+
+            <img
+              className="questions-section__log"
+              src={logImage}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+            />
+          </div>
+        </section>
       </main>
+
+      <footer className="site-footer">
+        <div className="site-footer__inner">
+          <div className="site-footer__brand-block">
+            <a href="#top" aria-label="BIO CWT home">
+              <img className="site-footer__logo" src={logo} alt="BIO CWT" />
+            </a>
+            <a className="site-footer__privacy" href="#privacy">
+              Privacy Policy
+            </a>
+          </div>
+
+          <a className="site-footer__contact" href="tel:+420000000000">
+            <img src={phoneIcon} alt="" aria-hidden="true" />
+            <span>+420 000 000 000</span>
+          </a>
+
+          <a
+            className="site-footer__contact site-footer__contact--address"
+            href="https://maps.google.com/?q=Na+Plzence+1166%2F0+150+00"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img src={locationIcon} alt="" aria-hidden="true" />
+            <span>
+              Na Plzence 1166/0
+              <br />
+              150 00
+            </span>
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
