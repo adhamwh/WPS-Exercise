@@ -1,162 +1,174 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getHomepage } from "./api/homepage";
-import type { HomepageResponse } from "./types/homepage";
+import type { HomepageSection } from "./types/homepage";
+import backgroundTexture from "./imgs/BackgroundImg.png";
+import heroImageOne from "./imgs/HeroImg1.jpg";
+import heroImageTwo from "./imgs/HeroImg2.jpg";
+import heroImageThree from "./imgs/HeroImg3.jpg";
+import logo from "./imgs/LogoWhite.png";
+import woodBackground from "./imgs/Woodstock.jpg";
 import "./index.css";
 
+const defaultHero = {
+  title: "SOLID WOOD PRODUCTS",
+  subtitle: "Oak, beech, ash from",
+  description: "1700 CZK per m3",
+  buttonText: "Order",
+  buttonUrl: "#contact",
+};
+
+const navigation = [
+  { label: "Gallery", href: "#gallery" },
+  { label: "Prices for services", href: "#services" },
+  { label: "About us", href: "#about" },
+  { label: "Contact", href: "#contact" },
+];
+
+function getTitleLines(title: string) {
+  const words = title.trim().split(/\s+/);
+
+  if (words.length < 3) {
+    return words;
+  }
+
+  return [words[0], words[1], words.slice(2).join(" ")];
+}
+
 function App() {
-  const [data, setData] = useState<HomepageResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [heroSection, setHeroSection] = useState<HomepageSection | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     getHomepage()
-      .then((response) => {
-        setData(response);
-      })
+      .then((response) => setHeroSection(response.sections.hero ?? null))
       .catch(() => {
-        setError("Could not load homepage data.");
-      })
-      .finally(() => {
-        setLoading(false);
+        // The design remains available while the API is offline during UI work.
       });
   }, []);
 
-  if (loading) {
-    return <div className="min-h-screen p-10">Loading...</div>;
-  }
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 24);
 
-  if (error || !data) {
-    return <div className="min-h-screen p-10 text-red-600">{error}</div>;
-  }
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
-  const hero = data.sections.hero;
-  const about = data.sections.about;
-  const contact = data.sections.contact;
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const hero = useMemo(
+    () => ({
+      title: heroSection?.title || defaultHero.title,
+      subtitle: heroSection?.subtitle || defaultHero.subtitle,
+      description: heroSection?.description || defaultHero.description,
+      buttonText: heroSection?.button_text || defaultHero.buttonText,
+      buttonUrl: heroSection?.button_url || defaultHero.buttonUrl,
+    }),
+    [heroSection],
+  );
+
+  const titleLines = getTitleLines(hero.title);
+  const [priceAmount, priceSuffix = ""] = hero.description.split(
+    /(?=\s+per\s+m3$)/i,
+  );
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <main className="page-shell min-h-screen text-white">
-      <header className="flex items-center justify-between px-8 py-6">
-        <div className="text-2xl font-bold">BIO CWT</div>
+    <div className="home-page">
+      <header
+        className={`site-header${isScrolled ? " site-header--scrolled" : ""}${
+          isMenuOpen ? " site-header--menu-open" : ""
+        }`}
+      >
+        <div className="site-header__inner">
+          <a className="site-header__brand" href="#top" aria-label="BIO CWT home">
+            <img src={logo} alt="BIO CWT" />
+          </a>
 
-        <nav className="hidden gap-8 md:flex">
-          <a href="#wood-types">Wood types</a>
-          <a href="#work">Our work</a>
-          <a href="#advantages">Advantages</a>
-          <a href="#about">About us</a>
-          <a href="#contact">Contact</a>
-        </nav>
+          <button
+            className="site-header__menu-button"
+            type="button"
+            aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={isMenuOpen}
+            aria-controls="primary-navigation"
+            onClick={() => setIsMenuOpen((open) => !open)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <nav
+            id="primary-navigation"
+            className={`site-header__nav${isMenuOpen ? " site-header__nav--open" : ""}`}
+            aria-label="Primary navigation"
+          >
+            {navigation.map((item) => (
+              <a key={item.label} href={item.href} onClick={closeMenu}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
       </header>
 
-      <section className="grid min-h-[520px] items-center px-8 py-16 md:grid-cols-2 md:px-16">
-        <div>
-          <p className="mb-4 text-lg">{hero?.subtitle}</p>
-          <h1 className="max-w-xl text-5xl font-bold leading-tight md:text-7xl">
-            {hero?.title}
-          </h1>
-          <p className="mt-5 text-2xl">{hero?.description}</p>
+      <main>
+        <section id="top" className="hero-section" aria-labelledby="hero-title">
+          <div
+            className="hero-section__wood"
+            style={{ backgroundImage: `url(${woodBackground})` }}
+            aria-hidden="true"
+          />
 
-          <a
-            href={hero?.button_url || "#contact"}
-            className="mt-8 inline-block rounded-full bg-[#8b5e34] px-8 py-3 font-semibold text-white"
-          >
-            {hero?.button_text || "Order"}
-          </a>
-        </div>
+          <div className="hero-card">
+            <div className="hero-card__content">
+              <h1 id="hero-title">
+                {titleLines.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </h1>
 
-        <div className="mt-10 rounded-[40px] bg-[#d7b98f] p-10 text-center md:mt-0">
-          <div className="text-8xl">🪵</div>
-          <p className="mt-4 text-lg">Hero image placeholder</p>
-        </div>
-      </section>
-
-      <section id="wood-types" className="px-8 py-16 md:px-16">
-        <h2 className="mb-8 text-4xl font-bold">WOOD TYPES</h2>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {data.wood_types.map((wood) => (
-            <article key={wood.id} className="rounded-3xl bg-white p-6 shadow-sm">
-              <div className="mb-4 rounded-2xl bg-[#ead8c0] p-8 text-center text-5xl">
-                🪵
-              </div>
-
-              <h3 className="text-2xl font-bold">{wood.name}</h3>
-              <p className="mt-2 text-sm text-[#5f5148]">
-                {wood.short_description}
+              <p className="hero-card__description">
+                <span>{hero.subtitle}</span>
+                <span>
+                  <strong>{priceAmount}</strong>
+                  {priceSuffix}
+                </span>
               </p>
 
-              <ul className="mt-5 space-y-2">
-                {wood.features?.map((feature) => (
-                  <li key={feature.label} className="flex items-center gap-2">
-                    <span>{feature.positive ? "✓" : "×"}</span>
-                    <span>{feature.label}</span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="work" className="px-8 py-16 md:px-16">
-        <h2 className="mb-8 text-4xl font-bold">
-          {data.sections.work?.title || "OUR WORK"}
-        </h2>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {[1, 2, 3].map((item) => (
-            <div
-              key={item}
-              className="h-64 rounded-3xl bg-[#c8a67a] p-6 text-white"
-            >
-              Gallery image placeholder
+              <a className="hero-card__button" href={hero.buttonUrl}>
+                {hero.buttonText}
+              </a>
             </div>
-          ))}
-        </div>
-      </section>
 
-      <section id="advantages" className="px-8 py-16 md:px-16">
-        <h2 className="mb-8 text-4xl font-bold">
-          {data.sections.advantages?.title || "ADVANTAGES WORKING WITH US"}
-        </h2>
+            <div className="hero-card__divider" aria-hidden="true" />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {data.services.map((service) => (
-            <article key={service.id} className="rounded-3xl bg-white p-6">
-              <div className="mb-4 text-4xl">✓</div>
-              <h3 className="text-xl font-bold">{service.title}</h3>
-              <p className="mt-3 text-[#5f5148]">{service.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+            <img
+              className="hero-card__image hero-card__image--top"
+              src={heroImageThree}
+              alt="Crafting a solid wood product"
+            />
+            <img
+              className="hero-card__image hero-card__image--middle"
+              src={heroImageTwo}
+              alt="Curved solid wood staircase"
+            />
+            <img
+              className="hero-card__image hero-card__image--bottom"
+              src={heroImageOne}
+              alt="Solid wood dining table"
+            />
+          </div>
 
-      <section id="about" className="grid gap-10 px-8 py-16 md:grid-cols-2 md:px-16">
-        <div className="h-80 rounded-3xl bg-[#d7b98f]" />
-        <div>
-          <h2 className="text-4xl font-bold">{about?.title}</h2>
-          <p className="mt-5 leading-7 text-[#5f5148]">{about?.description}</p>
-        </div>
-      </section>
-
-      <section id="contact" className="px-8 py-16 md:px-16">
-        <div className="rounded-[40px] bg-[#2f241d] p-8 text-white md:p-12">
-          <h2 className="text-4xl font-bold">{contact?.title}</h2>
-          <p className="mt-4 max-w-2xl text-white/80">{contact?.description}</p>
-
-          <form className="mt-8 grid gap-4 md:grid-cols-3">
-            <input className="rounded-full px-5 py-3 text-black" placeholder="Your name" />
-            <input className="rounded-full px-5 py-3 text-black" placeholder="Phone number" />
-            <button className="rounded-full bg-[#d7a15f] px-6 py-3 font-semibold">
-              {contact?.button_text || "Send"}
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <footer className="px-8 py-8 text-center text-sm md:px-16">
-        © BIO CWT. Solid wood products.
-      </footer>
-    </main>
+          <div
+            className="hero-section__contours"
+            style={{ backgroundImage: `url(${backgroundTexture})` }}
+            aria-hidden="true"
+          />
+        </section>
+      </main>
+    </div>
   );
 }
 

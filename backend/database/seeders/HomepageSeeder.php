@@ -17,7 +17,7 @@ class HomepageSeeder extends Seeder
             [
                 'title' => 'SOLID WOOD PRODUCTS',
                 'subtitle' => 'Oak, beech, ash from',
-                'description' => '1700 CZK per m3',
+                'description' => '1700 CZK per ㎥',
                 'button_text' => 'Order',
                 'button_url' => '#contact',
                 'image_path' => null,
