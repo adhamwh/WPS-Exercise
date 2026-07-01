@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getAboutPage } from "./api/about";
+import { getContactPage } from "./api/contact";
+import { getGallery } from "./api/gallery";
 import { getHomepage } from "./api/homepage";
+import { getNotFoundPage } from "./api/not-found";
+import { getServicesPage } from "./api/services";
 import type { HomepageSection, Service, WoodType } from "./types/homepage";
 import aboutImageOne from "./imgs/Aboutus1.jpg";
 import aboutImageTwo from "./imgs/Aboutus2.jpg";
@@ -15,9 +20,18 @@ import heroImageThree from "./imgs/HeroImg3.jpg";
 import locationIcon from "./imgs/LocationIcon.png";
 import logImage from "./imgs/LogImg.png";
 import logo from "./imgs/LogoWhite.png";
+import notFoundImage from "./imgs/NotFound.png";
 import oakWood from "./imgs/OakWood.jpg";
 import ourWorkOne from "./imgs/OurWork1.jpg";
 import phoneIcon from "./imgs/PhoneIcon.png";
+import priceOne from "./imgs/Price1.png";
+import priceTwo from "./imgs/Price2.png";
+import priceThree from "./imgs/Price3.png";
+import priceFour from "./imgs/Price4.png";
+import priceFive from "./imgs/Price5.png";
+import priceSix from "./imgs/Price6.png";
+import priceSeven from "./imgs/Price7.png";
+import priceEight from "./imgs/Price8.png";
 import woodBackground from "./imgs/Woodstock.jpg";
 import "./index.css";
 
@@ -30,11 +44,13 @@ const defaultHero = {
 };
 
 const navigation = [
-  { label: "Gallery", href: "#gallery" },
-  { label: "Prices for services", href: "#services" },
-  { label: "About us", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "Prices for services", href: "/services" },
+  { label: "About us", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
+
+const knownPaths = new Set(["/", "/gallery", "/services", "/about", "/contact"]);
 
 const defaultWoodTypes: WoodType[] = [
   {
@@ -104,6 +120,34 @@ const workSlides = [
   },
 ];
 
+const priceSlides = [
+  {
+    id: "oak",
+    items: [
+      { src: priceOne, alt: "Oak service size table" },
+      { src: priceThree, alt: "Oak service price table" },
+      { src: priceTwo, alt: "Oak additional service size table" },
+      { src: priceFour, alt: "Oak additional service price table" },
+    ],
+  },
+  {
+    id: "ash",
+    items: [
+      { src: priceFive, alt: "Ash service size table" },
+      { src: priceSix, alt: "Ash service price table" },
+      { src: priceSeven, alt: "Ash additional service size table" },
+      { src: priceEight, alt: "Ash additional service price table" },
+    ],
+  },
+  {
+    id: "mixed",
+    items: [
+      { src: priceSeven, alt: "Custom service size table" },
+      { src: priceEight, alt: "Custom service price table" },
+    ],
+  },
+];
+
 const defaultAdvantageItems = [
   "In-house carpentry production",
   "We only treat wood with environmentally friendly and safe products",
@@ -124,6 +168,23 @@ function getTitleLines(title: string) {
 }
 
 function App() {
+  const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
+  const isGalleryPage = currentPath === "/gallery";
+  const isServicesPage = currentPath === "/services";
+  const isAboutPage = currentPath === "/about";
+  const isContactPage = currentPath === "/contact";
+  const isNotFoundPage = !knownPaths.has(currentPath);
+  const mainPageClass = isGalleryPage
+    ? "gallery-page"
+    : isServicesPage
+      ? "services-page"
+      : isAboutPage
+        ? "about-page"
+        : isContactPage
+          ? "contact-page"
+          : isNotFoundPage
+            ? "not-found-page"
+            : undefined;
   const [heroSection, setHeroSection] = useState<HomepageSection | null>(null);
   const [advantagesSection, setAdvantagesSection] =
     useState<HomepageSection | null>(null);
@@ -134,11 +195,25 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeWood, setActiveWood] = useState(0);
   const [activeWork, setActiveWork] = useState(0);
+  const [activePrice, setActivePrice] = useState(0);
   const woodTrackRef = useRef<HTMLDivElement>(null);
   const workTouchStartX = useRef<number | null>(null);
+  const priceTouchStartX = useRef<number | null>(null);
 
   useEffect(() => {
-    getHomepage()
+    const fetchPageData = isNotFoundPage
+      ? getNotFoundPage
+      : isContactPage
+        ? getContactPage
+        : isServicesPage
+          ? getServicesPage
+          : isAboutPage
+            ? getAboutPage
+            : isGalleryPage
+              ? getGallery
+              : getHomepage;
+
+    fetchPageData()
       .then((response) => {
         setHeroSection(response.sections.hero ?? null);
         setAdvantagesSection(response.sections.advantages ?? null);
@@ -155,7 +230,13 @@ function App() {
       .catch(() => {
         // The design remains available while the API is offline during UI work.
       });
-  }, []);
+  }, [
+    isAboutPage,
+    isContactPage,
+    isGalleryPage,
+    isNotFoundPage,
+    isServicesPage,
+  ]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -245,12 +326,20 @@ function App() {
   return (
     <div className="home-page">
       <header
-        className={`site-header${isScrolled ? " site-header--scrolled" : ""}${
+        className={`site-header${
+          isScrolled ||
+          isGalleryPage ||
+          isServicesPage ||
+          isAboutPage ||
+          isContactPage
+            ? " site-header--scrolled"
+            : ""
+        }${
           isMenuOpen ? " site-header--menu-open" : ""
         }`}
       >
         <div className="site-header__inner">
-          <a className="site-header__brand" href="#top" aria-label="BIO CWT home">
+          <a className="site-header__brand" href="/" aria-label="BIO CWT home">
             <img src={logo} alt="BIO CWT" />
           </a>
 
@@ -273,7 +362,19 @@ function App() {
             aria-label="Primary navigation"
           >
             {navigation.map((item) => (
-              <a key={item.label} href={item.href} onClick={closeMenu}>
+              <a
+                key={item.label}
+                className={
+                  (item.label === "Gallery" && isGalleryPage) ||
+                  (item.label === "Prices for services" && isServicesPage) ||
+                  (item.label === "About us" && isAboutPage) ||
+                  (item.label === "Contact" && isContactPage)
+                    ? "site-header__nav-link--active"
+                    : undefined
+                }
+                href={item.href}
+                onClick={closeMenu}
+              >
                 {item.label}
               </a>
             ))}
@@ -287,7 +388,7 @@ function App() {
         aria-hidden="true"
       />
 
-      <main>
+      <main className={mainPageClass}>
         <section id="top" className="hero-section" aria-labelledby="hero-title">
           <div
             className="hero-section__wood"
@@ -552,6 +653,109 @@ function App() {
         </section>
 
         <section
+          id="price-list"
+          className="price-list-section"
+          aria-labelledby="price-list-title"
+        >
+          <div className="price-list-section__inner">
+            <h1 id="price-list-title" className="price-list-section__title">
+              PRICE LIST
+            </h1>
+
+            <div className="price-slider">
+              <button
+                className="price-slider__arrow price-slider__arrow--previous"
+                type="button"
+                aria-label="Show previous price list"
+                onClick={() =>
+                  setActivePrice(
+                    (activePrice - 1 + priceSlides.length) % priceSlides.length,
+                  )
+                }
+              >
+                <img src={arrow} alt="" aria-hidden="true" />
+              </button>
+
+              <div
+                className="price-slider__viewport"
+                aria-live="polite"
+                onTouchStart={(event) => {
+                  priceTouchStartX.current = event.touches[0]?.clientX ?? null;
+                }}
+                onTouchEnd={(event) => {
+                  if (priceTouchStartX.current === null) {
+                    return;
+                  }
+
+                  const endX = event.changedTouches[0]?.clientX;
+
+                  if (endX !== undefined) {
+                    const distance = endX - priceTouchStartX.current;
+
+                    if (Math.abs(distance) > 40) {
+                      setActivePrice(
+                        (activePrice +
+                          (distance < 0 ? 1 : -1) +
+                          priceSlides.length) %
+                          priceSlides.length,
+                      );
+                    }
+                  }
+
+                  priceTouchStartX.current = null;
+                }}
+              >
+                {priceSlides.map((slide, index) => (
+                  <div
+                    key={slide.id}
+                    className={`price-slider__slide${
+                      index === activePrice ? " price-slider__slide--active" : ""
+                    }`}
+                    aria-hidden={index !== activePrice}
+                  >
+                    {slide.items.map((item) => (
+                      <img
+                        className="price-slider__image"
+                        src={item.src}
+                        alt={index === activePrice ? item.alt : ""}
+                        loading={index === 0 ? "eager" : "lazy"}
+                        key={item.src}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className="price-slider__arrow price-slider__arrow--next"
+                type="button"
+                aria-label="Show next price list"
+                onClick={() =>
+                  setActivePrice((activePrice + 1) % priceSlides.length)
+                }
+              >
+                <img src={arrow} alt="" aria-hidden="true" />
+              </button>
+
+              <div className="price-slider__pagination" aria-label="Choose price list">
+                {priceSlides.map((slide, index) => (
+                  <button
+                    key={slide.id}
+                    className={`price-slider__dot${
+                      index === activePrice ? " price-slider__dot--active" : ""
+                    }`}
+                    type="button"
+                    aria-label={`Show price list ${index + 1}`}
+                    aria-current={index === activePrice ? "true" : undefined}
+                    onClick={() => setActivePrice(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
           id="about"
           className="about-section"
           aria-labelledby="about-title"
@@ -588,6 +792,67 @@ function App() {
                 loading="lazy"
               />
             </div>
+          </div>
+        </section>
+
+        <section
+          className="contact-info-section"
+          aria-labelledby="contact-info-title"
+        >
+          <div className="contact-info-section__inner">
+            <div className="contact-info-section__details">
+              <h1 id="contact-info-title" className="contact-info-section__title">
+                CONTACT
+              </h1>
+
+              <a
+                className="contact-info-section__item"
+                href="tel:+420000000000"
+              >
+                <img src={phoneIcon} alt="" aria-hidden="true" />
+                <span>+420 000 000 000</span>
+              </a>
+
+              <a
+                className="contact-info-section__item"
+                href="https://maps.google.com/?q=Pixel38%2C+11+4404%2C+47+Patriarch+Howeiyek+Street%2C+Beirut"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img src={locationIcon} alt="" aria-hidden="true" />
+                <span>
+                  Na Plzence 1166/0
+                  <br />
+                  150 00
+                </span>
+              </a>
+            </div>
+
+            <iframe
+              className="contact-info-section__map"
+              title="Pixel38 location in Beirut"
+              src="https://www.google.com/maps?q=Pixel38%2C%2011%204404%2C%2047%20Patriarch%20Howeiyek%20Street%2C%20Beirut&output=embed"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </section>
+
+        <section className="not-found-section" aria-labelledby="not-found-title">
+          <div
+            className="not-found-section__wood"
+            style={{ backgroundImage: `url(${woodBackground})` }}
+            aria-hidden="true"
+          />
+          <div className="not-found-section__content">
+            <img
+              className="not-found-section__number"
+              src={notFoundImage}
+              alt="404"
+            />
+            <h1 id="not-found-title">Woops</h1>
+            <p>Oh, you must be lost, there is no such page.</p>
+            <a href="/">Go to the home page</a>
           </div>
         </section>
 
@@ -651,37 +916,39 @@ function App() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="site-footer__inner">
-          <div className="site-footer__brand-block">
-            <a href="#top" aria-label="BIO CWT home">
-              <img className="site-footer__logo" src={logo} alt="BIO CWT" />
+      {!isNotFoundPage && (
+        <footer className="site-footer">
+          <div className="site-footer__inner">
+            <div className="site-footer__brand-block">
+              <a href="/" aria-label="BIO CWT home">
+                <img className="site-footer__logo" src={logo} alt="BIO CWT" />
+              </a>
+              <a className="site-footer__privacy" href="#privacy">
+                Privacy Policy
+              </a>
+            </div>
+
+            <a className="site-footer__contact" href="tel:+420000000000">
+              <img src={phoneIcon} alt="" aria-hidden="true" />
+              <span>+420 000 000 000</span>
             </a>
-            <a className="site-footer__privacy" href="#privacy">
-              Privacy Policy
+
+            <a
+              className="site-footer__contact site-footer__contact--address"
+              href="https://maps.google.com/?q=Pixel38%2C+11+4404%2C+47+Patriarch+Howeiyek+Street%2C+Beirut"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src={locationIcon} alt="" aria-hidden="true" />
+              <span>
+                Na Plzence 1166/0
+                <br />
+                150 00
+              </span>
             </a>
           </div>
-
-          <a className="site-footer__contact" href="tel:+420000000000">
-            <img src={phoneIcon} alt="" aria-hidden="true" />
-            <span>+420 000 000 000</span>
-          </a>
-
-          <a
-            className="site-footer__contact site-footer__contact--address"
-            href="https://maps.google.com/?q=Na+Plzence+1166%2F0+150+00"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img src={locationIcon} alt="" aria-hidden="true" />
-            <span>
-              Na Plzence 1166/0
-              <br />
-              150 00
-            </span>
-          </a>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
