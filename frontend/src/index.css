@@ -262,9 +262,14 @@ img {
   left: 505px;
   height: 400px;
   overflow: visible;
+  border: 1px solid rgba(255, 219, 187, 0.16);
+  border-right: 0;
   border-radius: 23px 0 0 23px;
   background: var(--color-black-brown);
-  box-shadow: 0 11px 20px rgba(0, 0, 0, 0.38);
+  box-shadow:
+    8px 0 22px rgba(255, 219, 187, 0.1),
+    0 10px 24px rgba(255, 219, 187, 0.12),
+    0 11px 20px rgba(0, 0, 0, 0.38);
 }
 
 .hero-card__content {
@@ -316,14 +321,7 @@ img {
   font-size: 17px;
   font-weight: 700;
   line-height: 1;
-  transition:
-    background-color 160ms ease,
-    transform 160ms ease;
-}
-
-.hero-card__button:hover {
-  background: var(--color-light-blue);
-  transform: translateY(-2px);
+  transition: background-color 160ms ease, color 160ms ease;
 }
 
 .hero-card__button:focus-visible,
@@ -631,15 +629,11 @@ img {
   background: var(--color-button-blue);
   font-size: 25px;
   font-weight: 700;
-  transition:
-    background-color 180ms ease,
-    transform 180ms ease;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
-.not-found-section__content a:hover,
 .not-found-section__content a:focus-visible {
   background: var(--color-light-blue);
-  transform: translateY(-2px);
 }
 
 .price-list-section {
@@ -1074,15 +1068,11 @@ img {
   font-size: 18px;
   font-weight: 700;
   line-height: 1;
-  transition:
-    background-color 180ms ease,
-    transform 180ms ease;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
-.advantages-section__button:hover,
 .advantages-section__button:focus-visible {
   background: var(--color-light-blue);
-  transform: translateY(-2px);
 }
 
 .about-section {
@@ -1300,15 +1290,19 @@ img {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    transform 180ms ease;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
-.questions-form button:hover,
 .questions-form button:focus-visible {
   background: var(--color-light-blue);
-  transform: translateY(-2px);
+}
+
+.hero-card__button:active,
+.advantages-section__button:active,
+.questions-form button:active,
+.not-found-section__content a:active {
+  background: var(--color-pale-blue);
+  color: var(--color-rust);
 }
 
 .questions-section__copy {
@@ -1809,6 +1803,38 @@ img {
   .contact-info-section__map {
     height: 340px;
     border-radius: 22px;
+  }
+
+  .contact-page .contact-info-section {
+    order: 1;
+  }
+
+  .contact-page .questions-section {
+    display: block;
+    min-height: 610px;
+    order: 2;
+  }
+
+  .contact-page .questions-section__inner {
+    min-height: 610px;
+    padding: 44px 28px 72px;
+  }
+
+  .contact-page .questions-section__title {
+    margin-bottom: 18px;
+    text-align: left;
+  }
+
+  .contact-page .questions-section__layout {
+    gap: 28px;
+  }
+
+  .contact-page .questions-section__copy {
+    order: 1;
+  }
+
+  .contact-page .questions-form {
+    order: 2;
   }
 
   .not-found-section__wood {
