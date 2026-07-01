@@ -144,12 +144,13 @@ img {
 }
 
 .site-header__nav a::after {
+  
+  color:#A3B8D7;
   position: absolute;
   right: 0;
   bottom: -10px;
   left: 0;
   height: 1px;
-  background: currentColor;
   content: "";
   opacity: 0;
   transform: scaleX(0.6);
@@ -355,6 +356,113 @@ img {
   pointer-events: none;
 }
 
+.wood-types-section {
+  position: relative;
+  min-height: 760px;
+  overflow: hidden;
+  scroll-margin-top: 100px;
+  background: var(--color-dark-bg);
+}
+
+.wood-types-section__contours {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-position: center -700px;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  pointer-events: none;
+}
+
+.wood-types-section__inner {
+  position: relative;
+  z-index: 1;
+  width: min(1220px, calc(100% - 96px));
+  margin: 0 auto;
+  padding: 128px 0 140px;
+}
+
+.wood-types-section__title {
+  max-width: 690px;
+  margin: 0 0 76px 72px;
+  font-family: var(--font-title);
+  font-size: 56px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.wood-types-section__title span {
+  display: block;
+}
+
+.wood-types__slider {
+  position: relative;
+}
+
+.wood-types__track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(60px, 8vw, 138px);
+}
+
+.wood-type-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wood-type-card__image {
+  width: 150px;
+  height: 150px;
+  border-radius: 22px;
+  object-fit: cover;
+}
+
+.wood-type-card__name {
+  margin: 18px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.wood-type-card__features {
+  width: 180px;
+  min-height: 118px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wood-type-card__features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-bottom: 8px;
+  font-size: 16px;
+  line-height: 1.22;
+}
+
+.wood-type-card__feature-icon {
+  flex: 0 0 auto;
+  color: var(--color-light-orange);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 0.95;
+}
+
+.wood-type-card__feature-icon--negative {
+  color: var(--color-peach);
+  font-weight: 400;
+}
+
+.wood-types__arrow,
+.wood-types__pagination {
+  display: none;
+}
+
 @media (max-width: 1180px) {
   .site-header__inner {
     padding-right: 42px;
@@ -551,6 +659,123 @@ img {
 
   .hero-section__contours {
     background-size: 100% auto;
+  }
+
+  .wood-types-section {
+    min-height: 650px;
+    scroll-margin-top: 131px;
+  }
+
+  .wood-types-section__contours {
+    background-position: center -520px;
+    background-size: auto 1940px;
+  }
+
+  .wood-types-section__inner {
+    width: 100%;
+    padding: 76px 0 94px;
+  }
+
+  .wood-types-section__title {
+    max-width: 310px;
+    margin: 0 0 52px;
+    padding: 0 clamp(32px, 15.7vw, 64px);
+    font-size: 34px;
+    line-height: 1.08;
+  }
+
+  .wood-types__track {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .wood-types__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .wood-type-card {
+    flex: 0 0 100%;
+    padding: 0 68px;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  .wood-type-card__image {
+    width: 128px;
+    height: 128px;
+    border-radius: 20px;
+  }
+
+  .wood-type-card__name {
+    margin-top: 17px;
+    font-size: 18px;
+  }
+
+  .wood-type-card__features {
+    width: 185px;
+    min-height: 122px;
+    margin-top: 23px;
+  }
+
+  .wood-types__arrow {
+    position: absolute;
+    z-index: 3;
+    top: 43px;
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.42);
+    border-radius: 50%;
+    background: rgba(33, 12, 6, 0.78);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .wood-types__arrow span {
+    font-size: 34px;
+    font-weight: 400;
+    line-height: 0.7;
+    transform: translateY(-1px);
+  }
+
+  .wood-types__arrow--previous {
+    left: 20px;
+  }
+
+  .wood-types__arrow--next {
+    right: 20px;
+  }
+
+  .wood-types__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    margin-top: 24px;
+  }
+
+  .wood-types__dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+  }
+
+  .wood-types__dot--active {
+    width: 22px;
+    border-radius: 999px;
+    background: var(--color-button-blue);
   }
 }
 
