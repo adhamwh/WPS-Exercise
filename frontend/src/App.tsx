@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import AuthProvider from "./auth/AuthProvider";
 import NotFoundSection from "./components/NotFoundSection";
 import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/admin/DashboardPage";
+import HomepageAdminPage from "./pages/admin/HomepageAdminPage";
+import ImagesAdminPage from "./pages/admin/ImagesAdminPage";
+import ProductsAdminPage from "./pages/admin/ProductsAdminPage";
+import ServicesAdminPage from "./pages/admin/ServicesAdminPage";
+import AdminLayout from "./layouts/AdminLayout";
 import PublicLayout from "./layouts/PublicLayout";
+import GuestRoute from "./routes/GuestRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
 import { getAboutPage } from "./api/about";
 import { getContactPage } from "./api/contact";
 import { getGallery } from "./api/gallery";
@@ -25,6 +35,8 @@ import priceSix from "./imgs/Price6.png";
 import priceSeven from "./imgs/Price7.png";
 import priceEight from "./imgs/Price8.png";
 import "./index.css";
+import "./styles/auth.css";
+import "./styles/admin.css";
 
 const defaultHero = {
   title: "SOLID WOOD PRODUCTS",
@@ -332,9 +344,25 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="*" element={<AppContent />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route element={<GuestRoute />}>
+            <Route path="/login" element={<LoginPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="homepage" element={<HomepageAdminPage />} />
+              <Route path="services" element={<ServicesAdminPage />} />
+              <Route path="products" element={<ProductsAdminPage />} />
+              <Route path="images" element={<ImagesAdminPage />} />
+            </Route>
+          </Route>
+
+          <Route path="*" element={<AppContent />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
