@@ -4,7 +4,7 @@
   max-width: 100vw;
   min-height: 100vh;
   grid-template-columns: 250px minmax(0, 1fr);
-  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--color-dark-bg);
   transition: grid-template-columns 220ms ease;
 }
@@ -18,12 +18,21 @@
   z-index: 10;
   top: 0;
   display: flex;
+  align-self: start;
   height: 100vh;
+  height: 100dvh;
   flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 32px 24px 28px;
   border-right: 1px solid rgba(255, 219, 187, 0.12);
   background: var(--color-black-brown);
   box-shadow: 12px 0 28px rgba(0, 0, 0, 0.18);
+  scrollbar-width: none;
+}
+
+.admin-sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .admin-sidebar__header {
@@ -50,11 +59,11 @@
 
 .admin-sidebar__collapse {
   position: absolute;
-  top: 11px;
-  right: -39px;
+  top: 8px;
+  right: 0;
   display: inline-flex;
-  width: 29px;
-  height: 29px;
+  width: 32px;
+  height: 32px;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -77,6 +86,11 @@
 .admin-sidebar__collapse:focus-visible {
   background: var(--color-light-blue);
   color: var(--color-black-brown);
+}
+
+.admin-sidebar__collapse:focus-visible {
+  outline: 2px solid var(--color-pale-blue);
+  outline-offset: 2px;
 }
 
 .admin-sidebar__collapse svg,
@@ -110,7 +124,9 @@
 }
 
 .admin-shell--collapsed .admin-sidebar__collapse {
-  right: -29px;
+  top: 56px;
+  right: 50%;
+  transform: translateX(50%);
 }
 
 .admin-shell--collapsed .admin-sidebar__collapse svg {
@@ -173,10 +189,24 @@
   font-weight: 700;
 }
 
-.admin-sidebar__nav-number {
+.admin-sidebar__nav-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
   color: var(--color-cream);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+}
+
+.admin-sidebar__nav-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  vector-effect: non-scaling-stroke;
 }
 
 .admin-sidebar__nav-label {
@@ -587,6 +617,7 @@
     width: 100%;
     height: auto;
     flex-direction: row;
+    overflow: visible;
     gap: 20px;
     align-items: center;
     padding: 15px 22px;
@@ -713,8 +744,8 @@
     display: flex;
   }
 
-  .admin-sidebar__nav-number {
-    display: inline;
+  .admin-sidebar__nav-icon {
+    display: inline-flex;
   }
 
   .admin-sidebar__nav > a,

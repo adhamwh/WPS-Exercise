@@ -11,13 +11,65 @@ import favicon from "../imgs/Favicon.png";
 import logo from "../imgs-optimized/LogoWhite.webp";
 
 const navigation = [
-  { number: "01", label: "Overview", path: "/admin", end: true },
-  { number: "02", label: "Homepage", path: "/admin/homepage" },
-  { number: "03", label: "Services", path: "/admin/services" },
-  { number: "04", label: "Products", path: "/admin/products" },
-  { number: "05", label: "Images", path: "/admin/images" },
-  { number: "06", label: "Inbox", path: "/admin/inbox" },
-];
+  { icon: "overview", label: "Overview", path: "/admin", end: true },
+  { icon: "homepage", label: "Homepage", path: "/admin/homepage", end: false },
+  { icon: "services", label: "Services", path: "/admin/services", end: false },
+  { icon: "products", label: "Products", path: "/admin/products", end: false },
+  { icon: "images", label: "Images", path: "/admin/images", end: false },
+  { icon: "inbox", label: "Inbox", path: "/admin/inbox", end: false },
+] as const;
+
+type AdminNavIconName = (typeof navigation)[number]["icon"];
+
+function AdminNavIcon({ name }: { name: AdminNavIconName }) {
+  return (
+    <span className="admin-sidebar__nav-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        {name === "overview" && (
+          <>
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </>
+        )}
+        {name === "homepage" && (
+          <>
+            <path d="m3.5 10.5 8.5-7 8.5 7" />
+            <path d="M5.5 9.5V20h13V9.5M9.5 20v-6h5v6" />
+          </>
+        )}
+        {name === "services" && (
+          <>
+            <path d="M4 6h4M12 6h8M4 12h10M18 12h2M4 18h2M10 18h10" />
+            <circle cx="10" cy="6" r="2" />
+            <circle cx="16" cy="12" r="2" />
+            <circle cx="8" cy="18" r="2" />
+          </>
+        )}
+        {name === "products" && (
+          <>
+            <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+            <path d="m4 7.5 8 4.5 8-4.5M12 12v9" />
+          </>
+        )}
+        {name === "images" && (
+          <>
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <circle cx="8.5" cy="9" r="1.5" />
+            <path d="m5 17 4.5-4 3.5 3 2.5-2 3.5 3" />
+          </>
+        )}
+        {name === "inbox" && (
+          <>
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m4 7 8 6 8-6" />
+          </>
+        )}
+      </svg>
+    </span>
+  );
+}
 
 function AdminLayout() {
   const { user, logout } = useAuth();
@@ -113,9 +165,7 @@ function AdminLayout() {
                 isActive ? "admin-sidebar__nav-link--active" : undefined
               }
             >
-              <span className="admin-sidebar__nav-number" aria-hidden="true">
-                {item.number}
-              </span>
+              <AdminNavIcon name={item.icon} />
               <span className="admin-sidebar__nav-label">{item.label}</span>
             </NavLink>
           ))}
