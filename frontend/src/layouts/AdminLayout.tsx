@@ -24,6 +24,7 @@ function AdminLayout() {
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -52,7 +53,7 @@ function AdminLayout() {
     <div
       className={`admin-shell${
         isSidebarCollapsed ? " admin-shell--collapsed" : ""
-      }`}
+      }${isMobileMenuOpen ? " admin-shell--mobile-menu-open" : ""}`}
     >
       <aside className="admin-sidebar" id="admin-sidebar">
         <div className="admin-sidebar__header">
@@ -80,15 +81,32 @@ function AdminLayout() {
               <path d="m14.5 6-6 6 6 6" />
             </svg>
           </button>
+          <button
+            className="admin-sidebar__mobile-toggle"
+            type="button"
+            onClick={() => setIsMobileMenuOpen((open) => !open)}
+            aria-label={isMobileMenuOpen ? "Close admin menu" : "Open admin menu"}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="admin-navigation"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 7h14M5 12h14M5 17h14" />
+            </svg>
+          </button>
         </div>
 
         <div className="admin-sidebar__label">Content management</div>
-        <nav className="admin-sidebar__nav" aria-label="Admin navigation">
+        <nav
+          className="admin-sidebar__nav"
+          id="admin-navigation"
+          aria-label="Admin navigation"
+        >
           {navigation.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.end}
+              onClick={() => setIsMobileMenuOpen(false)}
               title={isSidebarCollapsed ? item.label : undefined}
               className={({ isActive }) =>
                 isActive ? "admin-sidebar__nav-link--active" : undefined
@@ -102,7 +120,11 @@ function AdminLayout() {
           ))}
         </nav>
 
-        <Link className="admin-sidebar__site-link" to="/">
+        <Link
+          className="admin-sidebar__site-link"
+          to="/"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M5 12h14M14 7l5 5-5 5" />
           </svg>

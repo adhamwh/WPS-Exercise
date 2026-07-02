@@ -17,7 +17,7 @@ class HomepageSeeder extends Seeder
             [
                 'title' => 'SOLID WOOD PRODUCTS',
                 'subtitle' => 'Oak, beech, ash from',
-                'description' => '1700 CZK per ㎥',
+                'description' => '1700 CZK per m³',
                 'button_text' => 'Order',
                 'button_url' => '#contact',
                 'image_path' => null,
@@ -78,6 +78,20 @@ class HomepageSeeder extends Seeder
                 'button_url' => null,
                 'image_path' => null,
                 'sort_order' => 5,
+                'is_active' => true,
+            ]
+        );
+
+        HomepageSection::updateOrCreate(
+            ['key' => 'contact_info'],
+            [
+                'title' => 'CONTACT',
+                'subtitle' => '+420 000 000 000',
+                'description' => "Na Plzence 1166/0\n150 00",
+                'button_text' => null,
+                'button_url' => 'https://www.google.com/maps?q=Pixel38%2C%2011%204404%2C%2047%20Patriarch%20Howeiyek%20Street%2C%20Beirut&output=embed',
+                'image_path' => null,
+                'sort_order' => 6,
                 'is_active' => true,
             ]
         );

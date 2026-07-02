@@ -1,6 +1,7 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import BackgroundContours from "../components/BackgroundContours";
+import type { ContactDetails } from "../types/homepage";
 
 type NavigationItem = {
   label: string;
@@ -18,6 +19,7 @@ type PublicLayoutProps = {
   isContactPage: boolean;
   isNotFoundPage: boolean;
   mainPageClass?: string;
+  contactDetails: ContactDetails | null;
   closeMenu: () => void;
   toggleMenu: () => void;
 };
@@ -33,6 +35,7 @@ function PublicLayout({
   isContactPage,
   isNotFoundPage,
   mainPageClass,
+  contactDetails,
   closeMenu,
   toggleMenu,
 }: PublicLayoutProps) {
@@ -54,7 +57,10 @@ function PublicLayout({
 
       <main className={mainPageClass}>{children}</main>
 
-      <Footer isNotFoundPage={isNotFoundPage} />
+      <Footer
+        isNotFoundPage={isNotFoundPage}
+        contactDetails={contactDetails}
+      />
     </div>
   );
 }

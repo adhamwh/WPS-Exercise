@@ -6,12 +6,13 @@ import PriceListSection from "../components/PriceListSection";
 import AboutSection from "../components/AboutSection";
 import ContactInfoSection from "../components/ContactInfoSection";
 import QuestionsSection from "../components/QuestionsSection";
-import type { WoodType } from "../types/homepage";
+import type { ContactDetails, WoodType } from "../types/homepage";
 
 type HeroData = {
   subtitle: string;
   buttonText: string;
   buttonUrl: string;
+  image: string | null;
 };
 
 type WorkSlide = {
@@ -40,14 +41,31 @@ type HomePageProps = {
   priceSuffix: string;
   woodItems: WoodItem[];
   workSlides: WorkSlide[];
+  workTitle: string;
+  workDescription: string;
   advantagesLead: string;
   advantagesRest: string[];
+  advantagesDescription: string;
   advantageItems: string[];
   advantagesButtonText: string;
   advantagesButtonUrl: string;
+  advantagesImage: string | null;
   priceSlides: PriceSlide[];
   aboutTitle: string;
   aboutDescription: string;
+  aboutImage: string | null;
+  questionsTitle: string;
+  questionsDescription: string;
+  questionsButtonText: string;
+  questionsImage: string | null;
+  contactDetails: ContactDetails;
+  showHero: boolean;
+  showWoodTypes: boolean;
+  showWork: boolean;
+  showAdvantages: boolean;
+  showAbout: boolean;
+  showQuestions: boolean;
+  showContactInfo: boolean;
 };
 
 function HomePage({
@@ -57,45 +75,92 @@ function HomePage({
   priceSuffix,
   woodItems,
   workSlides,
+  workTitle,
+  workDescription,
   advantagesLead,
   advantagesRest,
+  advantagesDescription,
   advantageItems,
   advantagesButtonText,
   advantagesButtonUrl,
+  advantagesImage,
   priceSlides,
   aboutTitle,
   aboutDescription,
+  aboutImage,
+  questionsTitle,
+  questionsDescription,
+  questionsButtonText,
+  questionsImage,
+  contactDetails,
+  showHero,
+  showWoodTypes,
+  showWork,
+  showAdvantages,
+  showAbout,
+  showQuestions,
+  showContactInfo,
 }: HomePageProps) {
   return (
     <>
-      <HeroSection
-        titleLines={titleLines}
-        subtitle={hero.subtitle}
-        priceAmount={priceAmount}
-        priceSuffix={priceSuffix}
-        buttonText={hero.buttonText}
-        buttonUrl={hero.buttonUrl}
+      {showHero && (
+        <HeroSection
+          titleLines={titleLines}
+          subtitle={hero.subtitle}
+          priceAmount={priceAmount}
+          priceSuffix={priceSuffix}
+          buttonText={hero.buttonText}
+          buttonUrl={hero.buttonUrl}
+          image={hero.image}
+        />
+      )}
+
+      {showWoodTypes && <WoodTypesSection woodItems={woodItems} />}
+
+      {showWork && (
+        <OurWorkSection
+          key={workSlides.map((slide) => slide.src).join("|")}
+          title={workTitle}
+          description={workDescription}
+          workSlides={workSlides}
+        />
+      )}
+
+      {showAdvantages && (
+        <AdvantagesSection
+          advantagesLead={advantagesLead}
+          advantagesRest={advantagesRest}
+          description={advantagesDescription}
+          advantageItems={advantageItems}
+          buttonText={advantagesButtonText}
+          buttonUrl={advantagesButtonUrl}
+          image={advantagesImage}
+        />
+      )}
+
+      <PriceListSection
+        key={priceSlides.map((slide) => slide.id).join("|")}
+        priceSlides={priceSlides}
       />
 
-      <WoodTypesSection woodItems={woodItems} />
+      {showAbout && (
+        <AboutSection
+          title={aboutTitle}
+          aboutDescription={aboutDescription}
+          image={aboutImage}
+        />
+      )}
 
-      <OurWorkSection workSlides={workSlides} />
+      {showContactInfo && <ContactInfoSection details={contactDetails} />}
 
-      <AdvantagesSection
-        advantagesLead={advantagesLead}
-        advantagesRest={advantagesRest}
-        advantageItems={advantageItems}
-        buttonText={advantagesButtonText}
-        buttonUrl={advantagesButtonUrl}
-      />
-
-      <PriceListSection priceSlides={priceSlides} />
-
-      <AboutSection title={aboutTitle} aboutDescription={aboutDescription} />
-
-      <ContactInfoSection />
-
-      <QuestionsSection />
+      {showQuestions && (
+        <QuestionsSection
+          title={questionsTitle}
+          description={questionsDescription}
+          buttonText={questionsButtonText}
+          image={questionsImage}
+        />
+      )}
     </>
   );
 }

@@ -3,17 +3,21 @@ import advantagesImage from "../imgs-optimized/AdvantagesPic.webp";
 type AdvantagesSectionProps = {
   advantagesLead: string;
   advantagesRest: string[];
+  description: string;
   advantageItems: string[];
   buttonText: string;
   buttonUrl: string;
+  image?: string | null;
 };
 
 function AdvantagesSection({
   advantagesLead,
   advantagesRest,
+  description,
   advantageItems,
   buttonText,
   buttonUrl,
+  image,
 }: AdvantagesSectionProps) {
   return (
     <section
@@ -22,15 +26,26 @@ function AdvantagesSection({
       aria-labelledby="advantages-title"
     >
       <div className="advantages-section__inner">
-        <h2 id="advantages-title" className="advantages-section__title">
+        <h2
+          id="advantages-title"
+          className={`advantages-section__title${
+            description
+              ? ""
+              : " advantages-section__title--without-description"
+          }`}
+        >
           <span>{advantagesLead}</span>
           <span>{advantagesRest.join(" ")}</span>
         </h2>
 
+        {description && (
+          <p className="advantages-section__description">{description}</p>
+        )}
+
         <div className="advantages-section__content">
           <img
             className="advantages-section__image"
-            src={advantagesImage}
+            src={image || advantagesImage}
             alt="Solid wood staircase construction"
             loading="lazy"
           />

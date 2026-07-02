@@ -7,6 +7,7 @@ export type HomepageSection = {
   button_text: string | null;
   button_url: string | null;
   image_path: string | null;
+  image_url: string | null;
   sort_order: number;
   is_active: boolean;
 };
@@ -24,8 +25,10 @@ export type WoodType = {
   description: string | null;
   features: WoodFeature[] | null;
   image_path: string | null;
+  image_url: string | null;
   sort_order: number;
   is_active: boolean;
+  images: ProductImage[];
 };
 
 export type Service = {
@@ -34,7 +37,9 @@ export type Service = {
   slug: string;
   description: string | null;
   icon_path: string | null;
+  icon_url: string | null;
   image_path: string | null;
+  image_url: string | null;
   sort_order: number;
   is_active: boolean;
 };
@@ -43,8 +48,20 @@ export type ProductImage = {
   id: number;
   product_id: number;
   image_path: string;
+  image_url: string;
   alt_text: string | null;
   sort_order: number;
+  product?: {
+    id: number;
+    name: string;
+  };
+};
+
+export type ContactDetails = {
+  title: string;
+  phone: string;
+  address: string;
+  mapUrl: string;
 };
 
 export type HomepageResponse = {

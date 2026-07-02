@@ -7,7 +7,19 @@ const PHONE_MAX_LENGTH = 15;
 const QUESTION_MIN_LENGTH = 10;
 const QUESTION_MAX_LENGTH = 1000;
 
-function QuestionsSection() {
+type QuestionsSectionProps = {
+  title: string;
+  description: string;
+  buttonText: string;
+  image?: string | null;
+};
+
+function QuestionsSection({
+  title,
+  description,
+  buttonText,
+  image,
+}: QuestionsSectionProps) {
   return (
     <section
       id="contact"
@@ -16,7 +28,7 @@ function QuestionsSection() {
     >
       <div className="questions-section__inner">
         <h2 id="questions-title" className="questions-section__title">
-          ANY QUESTIONS?
+          {title}
         </h2>
 
         <div className="questions-section__layout">
@@ -68,18 +80,17 @@ function QuestionsSection() {
               />
             </label>
 
-            <button type="submit">Send</button>
+            <button type="submit">{buttonText}</button>
           </form>
 
           <p className="questions-section__copy">
-            Write to us and we will be sure to answer all your questions and
-            give you a comprehensive consultation.
+            {description}
           </p>
         </div>
 
         <img
           className="questions-section__log"
-          src={logImage}
+          src={image || logImage}
           alt=""
           aria-hidden="true"
           loading="lazy"

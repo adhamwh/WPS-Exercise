@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+    public const MAX_PUBLISHED = 6;
+
     protected $fillable = [
         'name',
         'slug',

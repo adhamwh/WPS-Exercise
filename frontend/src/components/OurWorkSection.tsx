@@ -7,10 +7,16 @@ type WorkSlide = {
 };
 
 type OurWorkSectionProps = {
+  title: string;
+  description: string;
   workSlides: WorkSlide[];
 };
 
-function OurWorkSection({ workSlides }: OurWorkSectionProps) {
+function OurWorkSection({
+  title,
+  description,
+  workSlides,
+}: OurWorkSectionProps) {
   const [activeWork, setActiveWork] = useState(0);
   const workTouchStartX = useRef<number | null>(null);
 
@@ -25,9 +31,20 @@ function OurWorkSection({ workSlides }: OurWorkSectionProps) {
       aria-labelledby="our-work-title"
     >
       <div className="our-work-section__inner">
-        <h2 id="our-work-title" className="our-work-section__title">
-          OUR WORK
+        <h2
+          id="our-work-title"
+          className={`our-work-section__title${
+            description
+              ? ""
+              : " our-work-section__title--without-description"
+          }`}
+        >
+          {title}
         </h2>
+
+        {description && (
+          <p className="our-work-section__description">{description}</p>
+        )}
 
         <div className="our-work-slider">
           <button

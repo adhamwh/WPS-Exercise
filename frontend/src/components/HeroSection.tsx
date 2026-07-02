@@ -10,6 +10,7 @@ type HeroSectionProps = {
   priceSuffix: string;
   buttonText: string;
   buttonUrl: string;
+  image?: string | null;
 };
 
 function HeroSection({
@@ -19,6 +20,7 @@ function HeroSection({
   priceSuffix,
   buttonText,
   buttonUrl,
+  image,
 }: HeroSectionProps) {
   return (
     <section id="top" className="hero-section" aria-labelledby="hero-title">
@@ -65,7 +67,7 @@ function HeroSection({
 
         <img
           className="hero-card__image hero-card__image--bottom"
-          src={heroImageOne}
+          src={image || heroImageOne}
           alt="Solid wood dining table"
         />
       </div>

@@ -5,12 +5,7 @@ use App\Http\Controllers\Api\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Api\Admin\ProductImageController as AdminProductImageController;
 use App\Http\Controllers\Api\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Api\Auth\AuthController;
-use App\Http\Controllers\Api\Public\AboutPageController;
-use App\Http\Controllers\Api\Public\ContactPageController;
-use App\Http\Controllers\Api\Public\GalleryController;
-use App\Http\Controllers\Api\Public\HomepageController;
-use App\Http\Controllers\Api\Public\NotFoundPageController;
-use App\Http\Controllers\Api\Public\ServicesPageController;
+use App\Http\Controllers\Api\Public\PublicPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function () {
@@ -33,9 +28,9 @@ Route::prefix('admin')->middleware('auth:api')->group(function () {
     Route::delete('/product-images/{productImage}', [AdminProductImageController::class, 'destroy']);
 });
 
-Route::get('/homepage', [HomepageController::class, 'index']);
-Route::get('/gallery', [GalleryController::class, 'index']);
-Route::get('/services', [ServicesPageController::class, 'index']);
-Route::get('/about', [AboutPageController::class, 'index']);
-Route::get('/contact', [ContactPageController::class, 'index']);
-Route::get('/not-found', [NotFoundPageController::class, 'index']);
+Route::get('/homepage', PublicPageController::class);
+Route::get('/gallery', PublicPageController::class);
+Route::get('/services', PublicPageController::class);
+Route::get('/about', PublicPageController::class);
+Route::get('/contact', PublicPageController::class);
+Route::get('/not-found', PublicPageController::class);

@@ -113,7 +113,7 @@ class CmsManagementTest extends TestCase
                     ['label' => 'Durable', 'positive' => true],
                     ['label' => 'Premium price', 'positive' => false],
                 ],
-                'sort_order' => 4,
+                'sort_order' => 1,
                 'is_active' => true,
             ])
             ->assertCreated()
@@ -133,6 +133,88 @@ class CmsManagementTest extends TestCase
             ->assertNoContent();
 
         $this->assertDatabaseMissing('products', ['id' => $productId]);
+    }
+
+    public function test_product_positions_are_bounded_and_renumbered(): void
+    {
+        $first = $this->withToken($this->accessToken)
+            ->postJson('/api/admin/products', [
+                'name' => 'Oak',
+                'sort_order' => 1,
+                'is_active' => false,
+            ])->assertCreated();
+        $second = $this->postJson('/api/admin/products', [
+            'name' => 'Ash',
+            'sort_order' => 2,
+            'is_active' => false,
+        ])->assertCreated();
+        $third = $this->postJson('/api/admin/products', [
+            'name' => 'Beech',
+            'sort_order' => 2,
+            'is_active' => false,
+        ])->assertCreated();
+        $firstId = $first->json('data.id');
+        $secondId = $second->json('data.id');
+        $thirdId = $third->json('data.id');
+
+        $this->assertDatabaseHas('products', [
+            'id' => $firstId,
+            'sort_order' => 1,
+        ]);
+        $this->assertDatabaseHas('products', [
+            'id' => $thirdId,
+            'sort_order' => 2,
+        ]);
+        $this->assertDatabaseHas('products', [
+            'id' => $secondId,
+            'sort_order' => 3,
+        ]);
+
+        $this->patchJson("/api/admin/products/{$firstId}", [
+            'sort_order' => 3,
+        ])->assertOk()->assertJsonPath('data.sort_order', 3);
+
+        $this->deleteJson("/api/admin/products/{$thirdId}")
+            ->assertNoContent();
+
+        $this->assertSame(
+            [1, 2],
+            Product::query()->orderBy('sort_order')->pluck('sort_order')->all()
+        );
+
+        $this->postJson('/api/admin/products', [
+            'name' => 'Invalid position',
+            'sort_order' => 9,
+            'is_active' => false,
+        ])->assertUnprocessable()->assertJsonValidationErrors('sort_order');
+    }
+
+    public function test_no_more_than_six_products_can_be_published(): void
+    {
+        foreach (range(1, Product::MAX_PUBLISHED) as $position) {
+            Product::query()->create([
+                'name' => "Product {$position}",
+                'slug' => "product-{$position}",
+                'sort_order' => $position,
+                'is_active' => true,
+            ]);
+        }
+
+        $hidden = Product::query()->create([
+            'name' => 'Hidden product',
+            'slug' => 'hidden-product',
+            'sort_order' => Product::MAX_PUBLISHED + 1,
+            'is_active' => false,
+        ]);
+
+        $this->withToken($this->accessToken)
+            ->patchJson("/api/admin/products/{$hidden->id}", [
+                'is_active' => true,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('is_active');
+
+        $this->assertFalse($hidden->refresh()->is_active);
     }
 
     public function test_admin_can_upload_edit_reorder_and_delete_product_images(): void

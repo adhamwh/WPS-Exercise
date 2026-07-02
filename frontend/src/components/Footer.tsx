@@ -2,12 +2,14 @@ import logo from "../imgs/LogoWhite.png";
 import phoneIcon from "../imgs/PhoneIcon.png";
 import locationIcon from "../imgs/LocationIcon.png";
 import { Link } from "react-router-dom";
+import type { ContactDetails } from "../types/homepage";
 
 type FooterProps = {
   isNotFoundPage: boolean;
+  contactDetails: ContactDetails | null;
 };
 
-function Footer({ isNotFoundPage }: FooterProps) {
+function Footer({ isNotFoundPage, contactDetails }: FooterProps) {
   if (isNotFoundPage) {
     return null;
   }
@@ -24,24 +26,27 @@ function Footer({ isNotFoundPage }: FooterProps) {
           </a>
         </div>
 
-        <a className="site-footer__contact" href="tel:+420000000000">
-          <img src={phoneIcon} alt="" aria-hidden="true" />
-          <span>+420 000 000 000</span>
-        </a>
+        {contactDetails && (
+          <a
+            className="site-footer__contact"
+            href={`tel:${contactDetails.phone.replace(/[^\d+]/g, "")}`}
+          >
+            <img src={phoneIcon} alt="" aria-hidden="true" />
+            <span>{contactDetails.phone}</span>
+          </a>
+        )}
 
-        <a
-          className="site-footer__contact site-footer__contact--address"
-          href="https://maps.google.com/?q=Pixel38%2C+11+4404%2C+47+Patriarch+Howeiyek+Street%2C+Beirut"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img src={locationIcon} alt="" aria-hidden="true" />
-          <span>
-            Na Plzence 1166/0
-            <br />
-            150 00
-          </span>
-        </a>
+        {contactDetails && (
+          <a
+            className="site-footer__contact site-footer__contact--address"
+            href={contactDetails.mapUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img src={locationIcon} alt="" aria-hidden="true" />
+            <span className="preserve-lines">{contactDetails.address}</span>
+          </a>
+        )}
       </div>
     </footer>
   );

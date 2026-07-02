@@ -5,9 +5,10 @@ import aboutImageThree from "../imgs-optimized/Aboutus3.webp";
 type AboutSectionProps = {
   title: string;
   aboutDescription: string;
+  image?: string | null;
 };
 
-function AboutSection({ title, aboutDescription }: AboutSectionProps) {
+function AboutSection({ title, aboutDescription, image }: AboutSectionProps) {
   return (
     <section
       id="about"
@@ -35,7 +36,7 @@ function AboutSection({ title, aboutDescription }: AboutSectionProps) {
           />
           <img
             className="about-section__image about-section__image--main"
-            src={aboutImageTwo}
+            src={image || aboutImageTwo}
             alt="Carpenter working in the BIO CWT workshop"
             loading="lazy"
           />

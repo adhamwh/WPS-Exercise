@@ -13,6 +13,8 @@ import ConfirmDialog from "../../components/admin/ConfirmDialog";
 import { useAdminCollection } from "../../hooks/useAdminCollection";
 import type { CmsProduct } from "../../types/cms";
 
+const MAX_PUBLISHED_PRODUCTS = 6;
+
 type EditableFeature = {
   key: number;
   label: string;
@@ -21,19 +23,36 @@ type EditableFeature = {
 
 type ProductFormProps = {
   product: CmsProduct | null;
+  productCount: number;
+  publishedCount: number;
   onClose: () => void;
   onSaved: (product: CmsProduct) => void;
 };
 
-function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
+function ProductForm({
+  product,
+  productCount,
+  publishedCount,
+  onClose,
+  onSaved,
+}: ProductFormProps) {
   const featureKey = useRef(product?.features?.length ?? 0);
+  const maximumPosition = Math.max(
+    1,
+    product ? productCount : productCount + 1,
+  );
+  const canPublish = Boolean(product?.is_active) || publishedCount < MAX_PUBLISHED_PRODUCTS;
   const [values, setValues] = useState({
     name: product?.name ?? "",
     slug: product?.slug ?? "",
     shortDescription: product?.short_description ?? "",
     description: product?.description ?? "",
-    sortOrder: String(product?.sort_order ?? 0),
-    isActive: product?.is_active ?? true,
+    sortOrder: String(
+      product
+        ? Math.min(maximumPosition, Math.max(1, product.sort_order))
+        : maximumPosition,
+    ),
+    isActive: product?.is_active ?? canPublish,
   });
   const [features, setFeatures] = useState<EditableFeature[]>(
     (product?.features ?? []).map((feature, index) => ({
@@ -125,8 +144,16 @@ function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
           {errors.description?.[0] && <small>{errors.description[0]}</small>}
         </label>
         <label className="admin-field">
-          <span>Display order</span>
-          <input type="number" min="0" value={values.sortOrder} onChange={(event) => update("sortOrder", event.target.value)} />
+          <span>Display position</span>
+          <select value={values.sortOrder} onChange={(event) => update("sortOrder", event.target.value)}>
+            {Array.from({ length: maximumPosition }, (_, index) => index + 1).map(
+              (position) => (
+                <option key={position} value={position}>
+                  {position} of {maximumPosition}
+                </option>
+              ),
+            )}
+          </select>
           {errors.sort_order?.[0] && <small>{errors.sort_order[0]}</small>}
         </label>
         <label className="admin-field">
@@ -193,10 +220,21 @@ function ProductForm({ product, onClose, onSaved }: ProductFormProps) {
       </div>
 
       <div className="admin-form__toggles">
-        <label className="admin-check">
-          <input type="checkbox" checked={values.isActive} onChange={(event) => update("isActive", event.target.checked)} />
-          <span>Published on the website</span>
-        </label>
+        <div className="admin-publish-control">
+          <label className="admin-check">
+            <input
+              type="checkbox"
+              checked={values.isActive}
+              disabled={!canPublish}
+              onChange={(event) => update("isActive", event.target.checked)}
+            />
+            <span>Published on the website</span>
+          </label>
+          <small className={errors.is_active?.[0] ? "admin-publish-control__error" : undefined}>
+            {errors.is_active?.[0] ||
+              `${publishedCount} of ${MAX_PUBLISHED_PRODUCTS} publishing slots are currently used.`}
+          </small>
+        </div>
         {product?.image_path && (
           <label className="admin-check admin-check--danger">
             <input type="checkbox" checked={removeImage} onChange={(event) => setRemoveImage(event.target.checked)} />
@@ -222,6 +260,7 @@ function ProductsAdminPage() {
   const [deletingProduct, setDeletingProduct] = useState<CmsProduct | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const publishedCount = items.filter((product) => product.is_active).length;
 
   const openCreate = () => {
     setEditingProduct(null);
@@ -237,6 +276,7 @@ function ProductsAdminPage() {
       const next = exists ? current.map((item) => (item.id === saved.id ? saved : item)) : [...current, saved];
       return next.sort((a, b) => a.sort_order - b.sort_order);
     });
+    void reload();
   };
   const handleDelete = async () => {
     if (!deletingProduct) return;
@@ -246,6 +286,7 @@ function ProductsAdminPage() {
       await deleteProduct(deletingProduct.id);
       setItems((current) => current.filter((item) => item.id !== deletingProduct.id));
       setDeletingProduct(null);
+      await reload();
     } catch (error) {
       setActionError(getAdminApiError(error).message);
     } finally {
@@ -260,7 +301,8 @@ function ProductsAdminPage() {
         eyebrow="Products"
         title="Wood types"
         description="Create and maintain product descriptions, features, publishing state, order, and primary images."
-        count={items.length}
+        count={publishedCount}
+        countLabel={`of ${MAX_PUBLISHED_PRODUCTS} published`}
         action={<button type="button" className="admin-button--primary" onClick={openCreate}>Add product</button>}
       />
 
@@ -297,7 +339,16 @@ function ProductsAdminPage() {
       )}
 
       <AdminModal isOpen={isFormOpen} title={editingProduct ? "Edit product" : "Add product"} description="Product features support positive and negative indicators." onClose={() => setIsFormOpen(false)} size="wide">
-        {isFormOpen && <ProductForm key={editingProduct?.id ?? "new"} product={editingProduct} onClose={() => setIsFormOpen(false)} onSaved={handleSaved} />}
+        {isFormOpen && (
+          <ProductForm
+            key={editingProduct?.id ?? "new"}
+            product={editingProduct}
+            productCount={items.length}
+            publishedCount={publishedCount}
+            onClose={() => setIsFormOpen(false)}
+            onSaved={handleSaved}
+          />
+        )}
       </AdminModal>
 
       <ConfirmDialog

@@ -10,6 +10,7 @@ use App\Services\Media\ImageStorageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -34,8 +35,18 @@ class ProductController extends Controller
             $data['slug'] ?? null,
             $data['name']
         );
+        $position = (int) ($data['sort_order'] ?? Product::query()->count() + 1);
+        unset($data['sort_order']);
 
-        $product = Product::query()->create($data);
+        $product = DB::transaction(function () use ($data, $position): Product {
+            $product = Product::query()->create([
+                ...$data,
+                'sort_order' => Product::query()->count() + 1,
+            ]);
+            $this->placeAt($product, $position);
+
+            return $product;
+        });
 
         if ($request->hasFile('image')) {
             $product->update([
@@ -61,6 +72,10 @@ class ProductController extends Controller
         Product $product
     ): ProductResource {
         $data = $request->safe()->except(['image', 'remove_image']);
+        $position = array_key_exists('sort_order', $data)
+            ? (int) $data['sort_order']
+            : null;
+        unset($data['sort_order']);
 
         if (array_key_exists('slug', $data)) {
             $data['slug'] = $this->makeSlug(
@@ -81,7 +96,13 @@ class ProductController extends Controller
             $data['image_path'] = null;
         }
 
-        $product->update($data);
+        DB::transaction(function () use ($product, $data, $position): void {
+            $product->update($data);
+
+            if ($position !== null) {
+                $this->placeAt($product, $position);
+            }
+        });
 
         return new ProductResource($product->refresh()->load('images'));
     }
@@ -94,7 +115,10 @@ class ProductController extends Controller
             $this->images->delete($image->image_path);
         }
 
-        $product->delete();
+        DB::transaction(function () use ($product): void {
+            $product->delete();
+            $this->normalizePositions();
+        });
 
         return response()->noContent();
     }
@@ -119,5 +143,38 @@ class ProductController extends Controller
         }
 
         return $slug;
+    }
+
+    private function placeAt(Product $product, int $position): void
+    {
+        $products = Product::query()
+            ->whereKeyNot($product->id)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->values();
+        $position = max(1, min($position, $products->count() + 1));
+        $products->splice($position - 1, 0, [$product]);
+
+        foreach ($products as $index => $orderedProduct) {
+            if ($orderedProduct->sort_order !== $index + 1) {
+                $orderedProduct->updateQuietly(['sort_order' => $index + 1]);
+            }
+        }
+    }
+
+    private function normalizePositions(): void
+    {
+        Product::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->each(function (Product $product, int $index): void {
+                if ($product->sort_order !== $index + 1) {
+                    $product->updateQuietly(['sort_order' => $index + 1]);
+                }
+            });
     }
 }
