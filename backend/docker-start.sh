@@ -5,5 +5,6 @@ php artisan route:clear
 php artisan view:clear
 php artisan migrate --force
 php artisan db:seed --force
+php artisan storage:link || true
 
 apache2-foreground
