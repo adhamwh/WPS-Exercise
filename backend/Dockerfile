@@ -30,7 +30,7 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader
 
 # Install JS dependencies and build React/Vite assets
-RUN npm install
+RUN npm install --include=optional
 RUN npm run build
 
 # Set Apache document root to Laravel public folder
