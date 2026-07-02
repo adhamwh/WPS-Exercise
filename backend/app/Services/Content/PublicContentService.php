@@ -27,7 +27,6 @@ class PublicContentService
 
         $products = Product::query()
             ->where('is_active', true)
-            ->with('images')
             ->orderBy('sort_order')
             ->limit(Product::MAX_PUBLISHED)
             ->get();
@@ -38,8 +37,11 @@ class PublicContentService
             ->get();
 
         $gallery = ProductImage::query()
-            ->whereHas('product', fn ($query) => $query->where('is_active', true))
-            ->with('product')
+            ->whereHas(
+                'product',
+                fn ($query) => $query->where('is_work_gallery', true)
+            )
+            ->with('product:id,name')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();

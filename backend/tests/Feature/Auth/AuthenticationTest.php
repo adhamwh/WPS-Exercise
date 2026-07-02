@@ -143,6 +143,41 @@ class AuthenticationTest extends TestCase
             ->assertUnauthorized();
     }
 
+    public function test_a_new_login_immediately_invalidates_the_previous_session(): void
+    {
+        User::factory()->create(['email' => 'admin@example.com']);
+
+        $firstLogin = $this->login();
+        $firstAccessToken = $firstLogin->json('access_token');
+        $firstRefreshToken = $this->refreshCookie($firstLogin);
+
+        $secondLogin = $this->login();
+        $secondAccessToken = $secondLogin->json('access_token');
+
+        Auth::forgetGuards();
+
+        $this->withToken($firstAccessToken)
+            ->getJson('/api/auth/me')
+            ->assertUnauthorized()
+            ->assertJsonPath('message', 'This session is no longer active.');
+
+        $this->withUnencryptedCookie('refresh_token', $firstRefreshToken)
+            ->postJson('/api/auth/refresh')
+            ->assertUnauthorized();
+
+        Auth::forgetGuards();
+
+        $this->withToken($secondAccessToken)
+            ->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('user.email', 'admin@example.com');
+
+        $this->assertSame(
+            1,
+            RefreshToken::query()->whereNull('revoked_at')->count()
+        );
+    }
+
     private function login(): TestResponse
     {
         return $this->postJson('/api/auth/login', [

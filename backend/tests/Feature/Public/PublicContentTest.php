@@ -43,6 +43,7 @@ class PublicContentTest extends TestCase
             'image_path' => 'products/walnut.jpg',
             'sort_order' => 1,
             'is_active' => true,
+            'is_work_gallery' => true,
         ]);
         $image = ProductImage::query()->create([
             'product_id' => $product->id,
@@ -86,7 +87,7 @@ class PublicContentTest extends TestCase
                     'wood_types.0.image_url',
                     Storage::disk('public')->url('products/walnut.jpg')
                 )
-                ->assertJsonPath('wood_types.0.images.0.id', $image->id)
+                ->assertJsonMissingPath('wood_types.0.images')
                 ->assertJsonCount(1, 'services')
                 ->assertJsonPath('services.0.title', 'Installation')
                 ->assertJsonCount(1, 'gallery')
@@ -95,23 +96,42 @@ class PublicContentTest extends TestCase
         }
     }
 
-    public function test_gallery_excludes_images_owned_by_inactive_products(): void
+    public function test_gallery_uses_only_the_selected_product_independent_of_publication(): void
     {
-        $product = Product::query()->create([
-            'name' => 'Inactive oak',
-            'slug' => 'inactive-oak',
+        $selectedProduct = Product::query()->create([
+            'name' => 'Private project gallery',
+            'slug' => 'private-project-gallery',
             'is_active' => false,
+            'is_work_gallery' => true,
         ]);
         ProductImage::query()->create([
-            'product_id' => $product->id,
-            'image_path' => 'products/inactive-oak.jpg',
+            'product_id' => $selectedProduct->id,
+            'image_path' => 'products/private-project.jpg',
+            'alt_text' => 'Selected project',
+            'sort_order' => 0,
+        ]);
+
+        $publishedProduct = Product::query()->create([
+            'name' => 'Published oak',
+            'slug' => 'published-oak',
+            'is_active' => true,
+            'is_work_gallery' => false,
+        ]);
+        ProductImage::query()->create([
+            'product_id' => $publishedProduct->id,
+            'image_path' => 'products/published-oak.jpg',
+            'alt_text' => 'Unselected project',
             'sort_order' => 0,
         ]);
 
         $this->getJson('/api/gallery')
             ->assertOk()
-            ->assertJsonCount(0, 'wood_types')
-            ->assertJsonCount(0, 'gallery');
+            ->assertJsonCount(1, 'wood_types')
+            ->assertJsonPath('wood_types.0.name', 'Published oak')
+            ->assertJsonCount(1, 'gallery')
+            ->assertJsonPath('gallery.0.alt_text', 'Selected project')
+            ->assertJsonPath('gallery.0.product.name', 'Private project gallery')
+            ->assertJsonMissing(['alt_text' => 'Unselected project']);
     }
 
     public function test_public_pages_never_return_more_than_six_products(): void
@@ -131,5 +151,26 @@ class PublicContentTest extends TestCase
             ->assertJsonPath('wood_types.0.name', 'Wood 1')
             ->assertJsonPath('wood_types.5.name', 'Wood 6')
             ->assertJsonMissing(['name' => 'Wood 7']);
+    }
+
+    public function test_content_version_changes_when_public_content_is_updated(): void
+    {
+        $before = $this->getJson('/api/content-version')
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'must-revalidate, no-cache, no-store, private')
+            ->json('version');
+
+        Product::query()->create([
+            'name' => 'Live update product',
+            'slug' => 'live-update-product',
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $after = $this->getJson('/api/content-version')
+            ->assertOk()
+            ->json('version');
+
+        $this->assertNotSame($before, $after);
     }
 }

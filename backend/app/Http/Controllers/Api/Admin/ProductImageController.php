@@ -10,6 +10,7 @@ use App\Http\Resources\ProductImageResource;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Services\Media\ImageStorageService;
+use App\Services\Content\PublicContentVersion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -18,7 +19,10 @@ use Illuminate\Validation\ValidationException;
 
 class ProductImageController extends Controller
 {
-    public function __construct(private readonly ImageStorageService $images) {}
+    public function __construct(
+        private readonly ImageStorageService $images,
+        private readonly PublicContentVersion $contentVersion
+    ) {}
 
     public function index(): AnonymousResourceCollection
     {
@@ -89,6 +93,8 @@ class ProductImageController extends Controller
                     ->update(['sort_order' => $sortOrder]);
             }
         });
+
+        $this->contentVersion->touch();
 
         return ProductImageResource::collection(
             $product->images()->with('product:id,name')->get()

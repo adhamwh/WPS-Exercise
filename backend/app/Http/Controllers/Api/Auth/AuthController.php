@@ -26,9 +26,9 @@ class AuthController extends Controller
     {
         /** @var JWTGuard $guard */
         $guard = Auth::guard('api');
-        $accessToken = $guard->attempt($request->validated());
+        $credentialToken = $guard->attempt($request->validated());
 
-        if (! $accessToken) {
+        if (! $credentialToken) {
             return response()->json([
                 'message' => 'The provided credentials are incorrect.',
             ], Response::HTTP_UNAUTHORIZED);
@@ -36,7 +36,8 @@ class AuthController extends Controller
 
         /** @var User $user */
         $user = $guard->user();
-        $refreshToken = $this->refreshTokens->issue($user, $request);
+        [$user, $refreshToken] = $this->refreshTokens->startSession($user, $request);
+        $accessToken = JWTAuth::fromUser($user);
 
         return $this->tokenResponse($user, $accessToken, $refreshToken);
     }

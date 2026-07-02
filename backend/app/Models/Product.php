@@ -18,11 +18,13 @@ class Product extends Model
         'image_path',
         'sort_order',
         'is_active',
+        'is_work_gallery',
     ];
 
     protected $casts = [
         'features' => 'array',
         'is_active' => 'boolean',
+        'is_work_gallery' => 'boolean',
         'sort_order' => 'integer',
     ];
 

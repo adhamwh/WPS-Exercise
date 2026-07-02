@@ -268,6 +268,35 @@ class CmsManagementTest extends TestCase
         $this->assertDatabaseHas('product_images', ['id' => $secondId]);
     }
 
+    public function test_admin_can_select_exactly_one_gallery_for_our_work(): void
+    {
+        $oak = Product::query()->create([
+            'name' => 'Oak',
+            'slug' => 'oak',
+            'is_active' => true,
+        ]);
+        $project = Product::query()->create([
+            'name' => 'Project gallery',
+            'slug' => 'project-gallery',
+            'is_active' => false,
+        ]);
+
+        $this->withToken($this->accessToken)
+            ->patchJson("/api/admin/products/{$oak->id}/work-gallery")
+            ->assertOk()
+            ->assertJsonPath('data.is_work_gallery', true);
+
+        $this->patchJson("/api/admin/products/{$project->id}/work-gallery")
+            ->assertOk()
+            ->assertJsonPath('data.id', $project->id)
+            ->assertJsonPath('data.is_active', false)
+            ->assertJsonPath('data.is_work_gallery', true);
+
+        $this->assertFalse($oak->refresh()->is_work_gallery);
+        $this->assertTrue($project->refresh()->is_work_gallery);
+        $this->assertSame(1, Product::query()->where('is_work_gallery', true)->count());
+    }
+
     public function test_product_image_reorder_rejects_incomplete_lists(): void
     {
         $product = Product::query()->create([

@@ -15,6 +15,10 @@ class User extends Authenticatable implements JWTSubject
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected $attributes = [
+        'auth_session_version' => 0,
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -46,6 +50,7 @@ class User extends Authenticatable implements JWTSubject
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'auth_session_version' => 'integer',
         ];
     }
 
@@ -64,6 +69,8 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims(): array
     {
-        return [];
+        return [
+            'session_version' => $this->auth_session_version,
+        ];
     }
 }

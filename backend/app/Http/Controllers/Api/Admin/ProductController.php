@@ -67,6 +67,20 @@ class ProductController extends Controller
         return new ProductResource($product->load('images'));
     }
 
+    public function selectWorkGallery(Product $product): ProductResource
+    {
+        DB::transaction(function () use ($product): void {
+            Product::query()
+                ->where('is_work_gallery', true)
+                ->whereKeyNot($product->id)
+                ->update(['is_work_gallery' => false]);
+
+            $product->update(['is_work_gallery' => true]);
+        });
+
+        return new ProductResource($product->refresh()->load('images'));
+    }
+
     public function update(
         ProductRequest $request,
         Product $product

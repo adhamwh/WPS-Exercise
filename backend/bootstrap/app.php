@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureCurrentAuthSession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
+
+        $middleware->alias([
+            'auth.session' => EnsureCurrentAuthSession::class,
+        ]);
+
         $middleware->redirectGuestsTo(
             fn (Request $request) => $request->is('api/*') ? null : '/login'
         );

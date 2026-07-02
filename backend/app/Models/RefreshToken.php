@@ -9,6 +9,7 @@ class RefreshToken extends Model
 {
     protected $fillable = [
         'token_hash',
+        'session_version',
         'expires_at',
         'revoked_at',
         'ip_address',
@@ -20,6 +21,7 @@ class RefreshToken extends Model
         return [
             'expires_at' => 'datetime',
             'revoked_at' => 'datetime',
+            'session_version' => 'integer',
         ];
     }
 

@@ -26,6 +26,7 @@ class ProductResource extends JsonResource
                 : null,
             'sort_order' => $this->sort_order,
             'is_active' => $this->is_active,
+            'is_work_gallery' => $this->is_work_gallery,
             'images' => ProductImageResource::collection(
                 $this->whenLoaded('images')
             ),
