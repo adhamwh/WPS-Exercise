@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\ProductFeaturesCast;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -22,7 +23,7 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'features' => 'array',
+        'features' => ProductFeaturesCast::class,
         'is_active' => 'boolean',
         'is_work_gallery' => 'boolean',
         'sort_order' => 'integer',

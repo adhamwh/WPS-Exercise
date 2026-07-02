@@ -8,6 +8,7 @@ use App\Models\ProductImage;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -133,6 +134,74 @@ class CmsManagementTest extends TestCase
             ->assertNoContent();
 
         $this->assertDatabaseMissing('products', ['id' => $productId]);
+    }
+
+    public function test_product_feature_checkbox_values_are_saved_as_booleans(): void
+    {
+        $response = $this->withToken($this->accessToken)->post(
+            '/api/admin/products',
+            [
+                'name' => 'Maple',
+                'features' => [
+                    ['label' => 'Durable', 'positive' => '1'],
+                    ['label' => 'Expensive', 'positive' => '0'],
+                ],
+                'sort_order' => '1',
+                'is_active' => '1',
+            ],
+            ['Accept' => 'application/json']
+        );
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.features.0.positive', true)
+            ->assertJsonPath('data.features.1.positive', false);
+
+        $response = $this->post(
+            "/api/admin/products/{$response->json('data.id')}",
+            [
+                '_method' => 'PATCH',
+                'features' => [
+                    ['label' => 'Durable', 'positive' => '0'],
+                    ['label' => 'Expensive', 'positive' => '1'],
+                ],
+            ],
+            ['Accept' => 'application/json']
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.features.0.positive', false)
+            ->assertJsonPath('data.features.1.positive', true);
+
+        $features = Product::query()->findOrFail(
+            $response->json('data.id')
+        )->features;
+
+        $this->assertFalse($features[0]['positive']);
+        $this->assertTrue($features[1]['positive']);
+    }
+
+    public function test_legacy_string_feature_values_are_returned_as_booleans(): void
+    {
+        $productId = DB::table('products')->insertGetId([
+            'name' => 'Legacy product',
+            'slug' => 'legacy-product',
+            'features' => json_encode([
+                ['label' => 'Durable', 'positive' => '1'],
+                ['label' => 'Expensive', 'positive' => '0'],
+            ], JSON_THROW_ON_ERROR),
+            'sort_order' => 1,
+            'is_active' => true,
+            'is_work_gallery' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $features = Product::query()->findOrFail($productId)->features;
+
+        $this->assertTrue($features[0]['positive']);
+        $this->assertFalse($features[1]['positive']);
     }
 
     public function test_product_positions_are_bounded_and_renumbered(): void
