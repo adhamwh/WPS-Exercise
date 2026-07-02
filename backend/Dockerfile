@@ -30,6 +30,7 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader
 
 # Install JS dependencies and build React/Vite assets
+RUN rm -rf node_modules package-lock.json
 RUN npm install --include=optional
 RUN npm run build
 
